@@ -98,3 +98,23 @@
 ><br>
 >![_IMAGE__Nano-Write-To-File.png](_IMAGE__Nano-Write-To-File.png)
 >![_IMAGE__After-Hosts-File-Update.png](_IMAGE__After-Hosts-File-Update.png)
+><br><br>
+>**REBOOT THE PRINTER'S MAINBOARD OS USING `sudo reboot`**
+><br>
+>**SSH BACK IN AS NON-ROOT USER WITH UPDATED HOST NAME**
+>![_IMAGE__Reboot-After-Hosts-Update.png](_IMAGE__Reboot-After-Hosts-Update.png)
+
+---
+
+>## 7.) UPDATE BASE OS & INSTALL ESSENTIAL 3D PRINTER SOFTWARE COMPONENTS
+>`sudo apt update && sudo apt upgrade -y `
+>![_IMAGE__Sudo-Apt-Update-Upgrade-Y.png](_IMAGE__Sudo-Apt-Update-Upgrade-Y.png)
+>`sudo reboot`
+><br>
+>`ssh mks@<IP_ADDRESS>`
+><br>
+>`<PASSWORD>`
+><br>
+>`sudo apt update && sudo apt upgrade -y `
+><br>
+>![_IMAGE__System-Fully-Updated.png](_IMAGE__System-Fully-Updated.png)
