@@ -177,3 +177,13 @@
 > [![_IMAGE__KIAUH-Crowsnest-Install-001.png](_IMAGE__KIAUH-Crowsnest-Install-001.png)](_IMAGE__KIAUH-Crowsnest-Install-001.png)
 > [![_IMAGE__KIAUH-Crowsnest-Install-002.png](_IMAGE__KIAUH-Crowsnest-Install-002.png)](_IMAGE__KIAUH-Crowsnest-Install-002.png)
 > <br><br>
+> ### 8.2) MAKE A QUICK BACKUP BEFORE PROCEEDING FURTHER
+> ```
+> cd ~
+> tar czf klipper-config-backup.tar.gz klipper_config
+> ```
+> 
+> ### 8.3) KATAPULT BOOTLOADER
+> ```
+> 
+> ```

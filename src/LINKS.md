@@ -6,19 +6,43 @@
 > ### GITHUB<br>[https://github.com/QIDITECH/QIDI_PLUS4](https://github.com/QIDITECH/QIDI_PLUS4)
 > ### WIKI<br>[https://wiki.qidi3d.com/en/home](https://wiki.qidi3d.com/en/home)
 >
+>
+>
+>
 ## QIDI COMMUNITY
 > ### Qidi Plus4 Community Wiki<br>[https://github.com/qidi-community/Plus4-Wiki/tree/main](https://github.com/qidi-community/Plus4-Wiki/tree/main)
+> 
+> 
 > ### OpenQIDI Wiki<br>[https://openqidi.com/books/upgrades-updates/page/freedi](https://openqidi.com/books/upgrades-updates/page/freedi)
-> ### FreeDi GitHub<br>[https://github.com/Phil1988/FreeDi/wiki](https://github.com/Phil1988/FreeDi/wiki)
+> 
+> 
+> ### FreeDi<br>[https://github.com/Phil1988/FreeDi/wiki](https://github.com/Phil1988/FreeDi/wiki)<br>[https://github.com/Phil1988/FreeDi/tree/master/FreeDiLCD](https://github.com/Phil1988/FreeDi/tree/master/FreeDiLCD)<br>[https://github.com/Phil1988/FreeDi/tree/master/screen_firmwares](https://github.com/Phil1988/FreeDi/tree/master/screen_firmwares)<br>[https://github.com/Phil1988/FreeDi/releases](https://github.com/Phil1988/FreeDi/releases)
+> 
+>
 > ### GitHub/Phrac<br>[https://github.com/phrac/plus4_kalico](https://github.com/phrac/plus4_kalico)
+> 
+> 
 > ### GitHub/Shadowrom2020<br>[https://github.com/Shadowrom2020](https://github.com/Shadowrom2020)
+>
+>
+>
 >
 ## 3D PRINTER SOFTWARE & SERVICES
 > ### KIAUH OFFICIAL<br>[https://github.com/dw-0/kiauh](https://github.com/dw-0/kiauh)
+> 
+> 
 > ### Katapult OFFICIAL<br>[https://github.com/Arksine/katapult](https://github.com/Arksine/katapult)
-> ### Klipper OFFICIAL<br>[https://github.com/Klipper3d/klipper](https://github.com/Klipper3d/klipper)
+> 
+> 
+> ### Klipper OFFICIAL<br>[https://github.com/Klipper3d/klipper](https://github.com/Klipper3d/klipper)<br>[https://www.klipper3d.org/](https://www.klipper3d.org/)
+> 
+> 
 > ### Moonraker OFFICIAL<br>[https://github.com/Arksine/moonraker](https://github.com/Arksine/moonraker)
-> ### Fluidd OFFICIAL<br>[https://github.com/fluidd-core/fluidd](https://github.com/fluidd-core/fluidd)
-> ### Beacon3D Site<br>[https://beacon3d.com/](https://beacon3d.com/)
-> ### Beacon3D Documentation<br>[https://docs.beacon3d.com/](https://docs.beacon3d.com/)
+> 
+> 
+> ### Fluidd OFFICIAL<br>[https://github.com/fluidd-core/fluidd](https://github.com/fluidd-core/fluidd)<br>[https://docs.fluidd.xyz/](https://docs.fluidd.xyz/)
+> 
+> 
+> ### Beacon3D Site<br>[https://beacon3d.com/](https://beacon3d.com/)<br>[https://docs.beacon3d.com/](https://docs.beacon3d.com/)
+>
 >
