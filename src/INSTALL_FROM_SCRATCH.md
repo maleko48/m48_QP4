@@ -27,12 +27,12 @@
 ---
 
 >## 4.) FIRST BOOT  --  LOGIN AS ROOT VIA SSH:
->**INITIAL HOST NAME WILL BE <code>qidi-x6</code>**
+>**INITIAL HOST NAME WILL BE `qidi-x6`**
 >
 >**MAC ADDRESS WILL BE RANDOM, CHECK YOUR ROUTER'S DHCP LEASES TO FIND IP ADDRESS GIVEN ON FIRST BOOT AND CREATE A STATIC DHCP RESERVATION FOR IT IN YOUR ROUTER**<br><br>
->**SSH IN USING <code>root</code> @ <IP_ADDRESS>**
+>**SSH IN USING `root @ <IP_ADDRESS>`**
 ><br>
->**WITH PASSWORD <code>1234</code>**
+>**WITH DEFAULT PASSWORD `1234`**
 >![_IMAGE__First-Login-Initial-SSH.png](_IMAGE__First-Login-Initial-SSH.png)
 ><br><br>
 >**PROCEED TO SET UP INITIAL BOOT ENVIRONMENT & NON-ROOT USER:**
@@ -48,7 +48,10 @@
 ---
 
 >## 5.) SHUTDOWN PRINTER, REBOOT ROUTER, & LOG IN TO PRINTER AS NON-ROOT USER VIA SSH
->**SHUTDOWN USING THE COMMAND `sudo shutdown -h now`**
+>**SHUTDOWN USING THE COMMAND**
+>```
+>sudo shutdown -h now
+>```
 >![_IMAGE__Shutdown-Printer.png](_IMAGE__Shutdown-Printer.png)
 ><br><br>
 >**ADJUST YOUR ROUTER'S DHCP RESERVATION FOR DESIRED IP ADDRESS IF NECESSARY.**
@@ -66,7 +69,9 @@
 ><br>
 ><hint>(don't forget to swap out the `<USER>` and `<IP_ADDRESS>` for your own or just copy and paste the provided snippet as is from your terminal)</hint>
 ><br>
-><code>ssh-keygen -f '/home/**`<USER>`**/.ssh/known_hosts' -R '**<IP_ADDRESS>**'</code>
+>```
+>ssh-keygen -f '/home/<USER>/.ssh/known_hosts' -R <IP_ADDRESS>
+>```
 >![_IMAGE__Fix-SSH-Error.png](_IMAGE__Fix-SSH-Error.png)
 ><br><br>
 >**FINALLY, LOG IN AS NON-ROOT USER**
@@ -76,16 +81,17 @@
 
 >## 6.) UPDATE HOST NAME
 >**SET THE NEW HOSTNAME**
->`sudo hostnamectl set-hostname qidi-plus4`
-><br><br>
+>```
+>sudo hostnamectl set-hostname qidi-plus4
+>```
 >![_IMAGE__Set-Hostname-Qidi-Plus4.png](_IMAGE__Set-Hostname-Qidi-Plus4.png)
-><br><br>
+><br><br><br>
 >**MANUALLY UPDATE THE `/etc/hosts` FILE TO PREVENT ERRORS**
-><br><br>
->`sudo nano /etc/hosts`
-><br><br>
+>```
+>sudo nano /etc/hosts
+>```
 >![_IMAGE__Nano-etc-hosts.png](_IMAGE__Nano-etc-hosts.png)
-><br><br>
+><br><br><br>
 >**UPDATE LINE #2 & #3 TO READ `qidi-plus4`**
 >![_IMAGE__Update-Hosts-File-Using-Nano.png](_IMAGE__Update-Hosts-File-Using-Nano.png)
 >**PRESS `CTRL + X`**
@@ -106,15 +112,35 @@
 
 ---
 
->## 7.) UPDATE BASE OS & INSTALL ESSENTIAL 3D PRINTER SOFTWARE COMPONENTS
->`sudo apt update && sudo apt upgrade -y `
+>## 7.) UPDATE BASE OS
+>```
+>sudo apt update && sudo apt upgrade -y
+>```
 >![_IMAGE__Sudo-Apt-Update-Upgrade-Y.png](_IMAGE__Sudo-Apt-Update-Upgrade-Y.png)
->`sudo reboot`
-><br>
->`ssh mks@<IP_ADDRESS>`
-><br>
->`<PASSWORD>`
-><br>
->`sudo apt update && sudo apt upgrade -y `
-><br>
+>```
+>sudo reboot
+>```
+>
+>```
+>ssh mks@<IP_ADDRESS>
+>```
+>
+>```
+><PASSWORD>
+>```
+>
+>```
+>sudo apt update && sudo apt upgrade -y
+>```
+>
 >![_IMAGE__System-Fully-Updated.png](_IMAGE__System-Fully-Updated.png)
+
+---
+
+>## 8.) INSTALL ESSENTIAL 3D PRINTER SOFTWARE COMPONENTS
+>### 8.1) KIAUH - KLIPPER INSTALLATION AND UPDATE HELPER
+>```
+>sudo apt-get update && sudo apt-get install git -y
+>cd ~ && git clone https://github.com/dw-0/kiauh.git
+>./kiauh/kiauh.sh
+>```
