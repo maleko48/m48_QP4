@@ -23,6 +23,9 @@
 > 
 > 
 > ### GitHub/Shadowrom2020<br>[https://github.com/Shadowrom2020](https://github.com/Shadowrom2020)
+> 
+> 
+> ### KlipperFleet<br>[https://github.com/JohnBaumb/KlipperFleet](https://github.com/JohnBaumb/KlipperFleet)
 >
 >
 >
@@ -46,3 +49,6 @@
 > ### Beacon3D Site<br>[https://beacon3d.com/](https://beacon3d.com/)<br>[https://docs.beacon3d.com/](https://docs.beacon3d.com/)
 >
 >
+> ### GitHub-Based Backup<br>[https://docs.vorondesign.com/community/howto/EricZimmerman/BackupConfigToGithub.html](https://docs.vorondesign.com/community/howto/EricZimmerman/BackupConfigToGithub.html)
+> ### STM32 Flash Guide<br>[https://usb.esoterical.online/initial_stm32.html](https://usb.esoterical.online/initial_stm32.html)
+> ### Qidi Box Flash Help<br>[https://github.com/Wazzup77/Bunny-Box/blob/main/dfu_flash.md](https://github.com/Wazzup77/Bunny-Box/blob/main/dfu_flash.md)

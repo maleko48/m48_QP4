@@ -177,13 +177,79 @@
 > [![_IMAGE__KIAUH-Crowsnest-Install-001.png](_IMAGE__KIAUH-Crowsnest-Install-001.png)](_IMAGE__KIAUH-Crowsnest-Install-001.png)
 > [![_IMAGE__KIAUH-Crowsnest-Install-002.png](_IMAGE__KIAUH-Crowsnest-Install-002.png)](_IMAGE__KIAUH-Crowsnest-Install-002.png)
 > <br><br>
-> ### 8.2) MAKE A QUICK BACKUP BEFORE PROCEEDING FURTHER
+
+---
+
+> ### 8.2) MAKE A BACKUP BEFORE PROCEEDING FURTHER
+> **[https://docs.vorondesign.com/community/howto/EricZimmerman/BackupConfigToGithub.html](https://docs.vorondesign.com/community/howto/EricZimmerman/BackupConfigToGithub.html)**
+
+---
+
+> ### 8.3) PREPARE FOR FreeDi INSTALLATION
+> **[https://github.com/Phil1988/FreeDi/wiki/Tour-%232:-Adjusting-the-printer-config](https://github.com/Phil1988/FreeDi/wiki/Tour-%232:-Adjusting-the-printer-config)**
+
+---
+
+> ### 8.4) INSTALL FreeDi
+> ```
+> cd ~ && git clone https://github.com/Phil1988/FreeDi ~/FreeDi
+> cd ~/FreeDi && ./install.sh
+> ```
+> 
+> ### 8.5a) FLASH MAINBOARD MCU
+> **NOTE:**<br>To put toolhead board in flashing mode, you must press and hold the boot button while you press the reset button, then release the reset button. there will be no lights or indications to speak of.
 > ```
 > cd ~
-> tar czf klipper-config-backup.tar.gz klipper_config
+> git clone https://github.com/Arksine/katapult
+> cd katapult
+> make menuconfig
 > ```
 > 
-> ### 8.3) KATAPULT BOOTLOADER
+> #### BUILD & FLASH KATAPULT
+> [![_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED.png](_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED.png)](_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED.png)
+> 
+> Press `q` then `y` to `quit and save`
+> 
+> Next, build the binaries
+> ```
+> make clean
+> make -j4
 > ```
 > 
+> Then request Mainboard MCU bootloader
+> 
 > ```
+> cd ~/katapult/scripts
+> python3 flashtool.py -b 500000 -d /dev/ttyS0 -r
+> ```
+> 
+> Then flash `Katapult.bin` to `mainboard MCU`
+> ```
+> cd ~/katapult/scripts
+> python3 flashtool.py -b 500000 -d /dev/ttyS0 -f ~/katapult/out/katapult.bin
+> ```
+> 
+> Next, power cycle printer using
+> ```
+> sudo shutdown -h now
+> ```
+> `Wait 30 seconds` and `kill power` to printer
+> 
+> `Wait an additional 30 seconds once powered off` then `restore power` again
+> 
+> Once booted, `click center reset button on mainboard` to enter flashing mode again
+> 
+> **NOTE:**<br>the `red LED` and `white caselights` should be `blinking on and off` to let you know it is in `flashing mode`
+> 
+> #### BUILD & FLASH KLIPPER
+> [![_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges.png](_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges.png)](_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges.png)
+> 
+> Press `q` then `y` to `quit and save`.
+> 
+> Next, build the binaries
+> ```
+> make clean
+> make -j4
+> ```
+> 
+> 
