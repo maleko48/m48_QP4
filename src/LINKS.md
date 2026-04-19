@@ -26,6 +26,9 @@
 > 
 > 
 > ### KlipperFleet<br>[https://github.com/JohnBaumb/KlipperFleet](https://github.com/JohnBaumb/KlipperFleet)
+> 
+> 
+> ### Plus4 Vanilla Kalico Configs<br>[https://github.com/ApplePiYT/QIDI-Plus4](https://github.com/ApplePiYT/QIDI-Plus4)
 >
 >
 >
@@ -52,3 +55,9 @@
 > ### GitHub-Based Backup<br>[https://docs.vorondesign.com/community/howto/EricZimmerman/BackupConfigToGithub.html](https://docs.vorondesign.com/community/howto/EricZimmerman/BackupConfigToGithub.html)
 > ### STM32 Flash Guide<br>[https://usb.esoterical.online/initial_stm32.html](https://usb.esoterical.online/initial_stm32.html)
 > ### Qidi Box Flash Help<br>[https://github.com/Wazzup77/Bunny-Box/blob/main/dfu_flash.md](https://github.com/Wazzup77/Bunny-Box/blob/main/dfu_flash.md)
+> 
+## REFERENCE LINKS & MATERIALS
+> - [https://github.com/Arksine/katapult/issues/135](https://github.com/Arksine/katapult/issues/135)
+> - [https://klipper.discourse.group/t/how-to-enter-into-bootloader-with-serial-connected-mcu/21251/26](https://klipper.discourse.group/t/how-to-enter-into-bootloader-with-serial-connected-mcu/21251/26)
+> - [https://github.com/spooknik/Qidi-4-Plus/blob/main/QIdi_Plus_4_Mainboard_PIN.pdf](https://github.com/spooknik/Qidi-4-Plus/blob/main/QIdi_Plus_4_Mainboard_PIN.pdf)
+> - [https://www.st.com/resource/en/application_note/an3155-usart-protocol-used-in-the-stm32-bootloader-stmicroelectronics.pdf](https://www.st.com/resource/en/application_note/an3155-usart-protocol-used-in-the-stm32-bootloader-stmicroelectronics.pdf)

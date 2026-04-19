@@ -1,5 +1,10 @@
 # HELPFUL COMMANDS &amp; SNIPPETS
 
+> ## UPDATE HOST LINUX SYSTEM
+> ```
+> sudo apt update && apt upgrade -y
+> ```
+> 
 > ## LIST USB DEVICES
 > ```
 > lsusb
@@ -26,10 +31,13 @@
 > ```
 > sudo service klipper stop
 > ```
+> ```
+> sudo systemctrl stop klipper
+> ```
  
 ---
 
-> ## FLASHTOOL COMMANDS
+> ## KATAPULT FLASHTOOL COMMANDS
 > ```
 > usage: flashtool.py [-h] [-d <serial device>] [-b <baud rate>]
 >                     [-i <can interface>] [-f <klipper.bin>]

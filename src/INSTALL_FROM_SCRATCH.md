@@ -195,17 +195,31 @@
 > cd ~ && git clone https://github.com/Phil1988/FreeDi ~/FreeDi
 > cd ~/FreeDi && ./install.sh
 > ```
-> 
+> **NOTE:**<br>I believe FreeDi includes this fix by default, but just to be safe, make sure the default serial debug console gets disabled so it doesn't interfere with the flashing in the next steps.
+> ```
+> echo 'console=none' > sudo tee -a /boot/armbianEnv.txt
+> # Grant user permissions and prevent getty from taking over the port
+> echo 'KERNEL=="ttyS2",MODE="0660"' > /etc/udev/rules.d/99-ttyS2.rules
+> systemctl mask serial-getty@ttyS2.service
+> ```
+>
 > ### 8.5a) FLASH MAINBOARD MCU
-> **NOTE:**<br>To put toolhead board in flashing mode, you must press and hold the boot button while you press the reset button, then release the reset button. there will be no lights or indications to speak of.
+> **NOTE:**<br>To put `toolhead` board in `MCU flash mode`, you must `press and hold the boot button while you press the reset button`, `then release the reset button`.
+>
+> <mark>There will be no lights or indications to speak of.</mark>
+> 
+> Start by updating `pyserial` Python package to be safe
+> ```
+> python -m pip install pyserial
+> ```
+> 
+> #### BUILD & FLASH KATAPULT
 > ```
 > cd ~
 > git clone https://github.com/Arksine/katapult
 > cd katapult
 > make menuconfig
 > ```
-> 
-> #### BUILD & FLASH KATAPULT
 > [![_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED.png](_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED.png)](_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED.png)
 > 
 > Press `q` then `y` to `quit and save`
@@ -223,7 +237,7 @@
 > python3 flashtool.py -b 500000 -d /dev/ttyS0 -r
 > ```
 > 
-> Then flash `Katapult.bin` to `mainboard MCU`
+> Then flash `katapult.bin` to `mainboard MCU`
 > ```
 > cd ~/katapult/scripts
 > python3 flashtool.py -b 500000 -d /dev/ttyS0 -f ~/katapult/out/katapult.bin
@@ -239,7 +253,7 @@
 > 
 > Once booted, `click center reset button on mainboard` to enter flashing mode again
 > 
-> **NOTE:**<br>the `red LED` and `white caselights` should be `blinking on and off` to let you know it is in `flashing mode`
+> **NOTE:**<br>the `red LED` and `white caselights` should be `blinking on and off` to let you know it is in `MCU flashing mode`
 > 
 > #### BUILD & FLASH KLIPPER
 > [![_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges.png](_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges.png)](_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges.png)
@@ -252,4 +266,18 @@
 > make -j4
 > ```
 > 
+> Then flash `klipper.bin` to `mainboard MCU`
+> ```
+> sudo service klipper stop
+> cd ~/katapult/scripts
+> python3 flashtool.py -b 500000 -d /dev/ttyS0 -f ~/klipper/out/klipper.bin
+> ```
+> 
+> Next, power cycle printer using
+> ```
+> sudo shutdown -h now
+> ```
+> `Wait 30 seconds` and `kill power` to printer
+> 
+> `Wait an additional 30 seconds once powered off` then `restore power` again
 > 
