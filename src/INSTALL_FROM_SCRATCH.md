@@ -204,9 +204,6 @@
 > ```
 >
 > ### 8.5a) FLASH MAINBOARD MCU
-> **NOTE:**<br>To put `toolhead` board in `MCU flash mode`, you must `press and hold the boot button while you press the reset button`, `then release the reset button`.
->
-> <mark>There will be no lights or indications to speak of.</mark>
 > 
 > Start by updating `pyserial` Python package to be safe
 > ```
@@ -281,3 +278,14 @@
 > 
 > `Wait an additional 30 seconds once powered off` then `restore power` again
 > 
+> ### 8.5b) FLASH TOOLHEAD MCU
+> 
+> [https://github.com/Phil1988/FreeDi/wiki/Step-%232:-Flashing-the-toolhead-(Plus4)](https://github.com/Phil1988/FreeDi/wiki/Step-%232:-Flashing-the-toolhead-(Plus4))
+> 
+> [https://github.com/phrac/plus4_kalico#flashing-the-toolhead](https://github.com/phrac/plus4_kalico#flashing-the-toolhead)
+> 
+> **NOTE:<br>A ST-LINK V2 MINI programmer is REQUIRED for the Qidi Plus4 toolhead to be flashed for the FIRST TIME and for recovery if something goes wrong!**
+> 
+> To put the `toolhead` board in `MCU flash mode`, you must `press and hold the boot button while you press the reset button`, `then release the reset button`.
+>
+> <mark>There will be no lights or indications to speak of.</mark>
