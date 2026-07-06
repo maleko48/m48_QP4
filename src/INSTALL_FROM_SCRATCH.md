@@ -106,7 +106,7 @@
 > [![_IMAGE__Nano-Write-To-File.png](_IMAGE__Nano-Write-To-File.png)](_IMAGE__Nano-Write-To-File.png)
 > [![_IMAGE__After-Hosts-File-Update.png](_IMAGE__After-Hosts-File-Update.png)](_IMAGE__After-Hosts-File-Update.png)
 > <br><br>
-> **REBOOT THE PRINTER'S MAINBOARD OS USING `sudo reboot`**
+> **REBOOT THE PRINTER'S MAINBOARD OS USING `sudo reboot now`**
 > 
 > **SSH BACK IN AS NON-ROOT USER WITH UPDATED HOST NAME**
 > 
@@ -121,7 +121,7 @@
 > ```
 > [![_IMAGE__Sudo-Apt-Update-Upgrade-Y.png](_IMAGE__Sudo-Apt-Update-Upgrade-Y.png)](_IMAGE__Sudo-Apt-Update-Upgrade-Y.png)
 > ```
-> sudo reboot
+> sudo reboot now
 > ```
 > 
 > ```
@@ -209,15 +209,20 @@
 > ```
 > python -m pip install pyserial
 > ```
+> If that does not work, try:
+> ```
+> sudo apt install python3 python3-serial
+> ```
 > 
 > #### BUILD & FLASH KATAPULT
 > ```
 > cd ~
 > git clone https://github.com/Arksine/katapult
 > cd katapult
+> git pull
 > make menuconfig
 > ```
-> [![_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED.png](_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED.png)](_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED.png)
+> [![_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED_LABELED.png](_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED_LABELED.png)](_IMAGE__Katapult__STM32F401__32k-bootloader_8MHz_USART1-PA10-PA9_32k-offset_500k-baud_BOO-0s_2xclick-reset_status-PC7-LED_LABELED.png)
 > 
 > Press `q` then `y` to `quit and save`
 > 
@@ -227,9 +232,19 @@
 > make -j4
 > ```
 > 
+> To pull the generated `deployer.bin` and `katapult.bin` files back to your host machine from the 3D printer, you can use the following command from a WSL Debian session:
+> ```
+> mkdir -p /mnt/f/zFLASH/katapult-out/mainboard/ && scp mks@10.10.60.6:~/katapult/out/deployer.bin /mnt/f/zFLASH/katapult-out/mainboard/deployer.bin && scp mks@10.10.60.6:~/katapult/out/katapult.bin /mnt/f/zFLASH/katapult-out/mainboard/katapult.bin
+> ```
+> Or, more generically ( for most users ), you can use the following but don't forget to change `<USERNAME>` and `<IP_ADDRESS>` to your own first:
+> ```
+> mkdir -p /mnt/c/zTEMP/katapult-out/mainboard/ && scp <USERNAME>@<IP_ADDRESS>:~/katapult/out/deployer.bin /mnt/c/zTEMP/katapult-out/mainboard/deployer.bin && scp <USERNAME>@<IP_ADDRESS>:~/katapult/out/katapult.bin /mnt/c/zTEMP/katapult-out/mainboard/katapult.bin
+> ```
+> 
 > Then request Mainboard MCU bootloader
 > 
 > ```
+> sudo service klipper stop
 > cd ~/katapult/scripts
 > python3 flashtool.py -b 500000 -d /dev/ttyS0 -r
 > ```
