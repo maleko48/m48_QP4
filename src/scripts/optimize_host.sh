@@ -6,8 +6,48 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+MODE="${1:-interactive}"
+
+run_verification() {
+    local wait_secs="$1"
+    echo "Waiting ${wait_secs} seconds for services and sub-processes to initialize..."
+    sleep "$wait_secs"
+    /etc/init.d/tuning irq
+
+    echo ""
+    echo "=== VERIFICATION ==="
+    for proc in klippy.py moonraker nginx ustreamer FreeDiLCD/start.py; do
+        echo "--- $proc ---"
+        raw_pids=$(pgrep -f "$proc" || true)
+        pids=$(echo "$raw_pids" | tr '\n' ',' | sed 's/,$//')
+        if [ -n "$pids" ]; then
+            ps -T -o pid,tid,ni,comm -p "$pids"
+            for p in $raw_pids; do
+                taskset -cp "$p"
+            done
+        else
+            echo "Not running"
+        fi
+    done
+
+    echo ""
+    echo "--- IRQ AFFINITY ---"
+    grep -E 'ttyS|xhci|dwc2|ehci|ohci' /proc/interrupts | while read -r line; do
+        irq=$(echo "$line" | awk -F: '{print $1}' | tr -d ' ')
+        aff=$(cat /proc/irq/"$irq"/smp_affinity_list 2>/dev/null || echo "N/A")
+        dev=$(echo "$line" | awk '{print $NF}')
+        printf "IRQ %-3s (%-22s) -> CPU %s\n" "$irq" "$dev" "$aff"
+    done
+}
+
+# Post-boot verification hook called by optimize-host.service ExecStartPost
+if [ "$MODE" = "--verify" ]; then
+    run_verification 6
+    exit 0
+fi
+
 BOOT_MODE=false
-if [ "${1:-}" = "--boot" ]; then
+if [ "$MODE" = "--boot" ]; then
     BOOT_MODE=true
 fi
 
@@ -217,7 +257,7 @@ After=local-fs.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/env bash ${SCRIPT_DEST} --boot
-ExecStartPost=/bin/sh -c 'sleep 6 && /etc/init.d/tuning irq &'
+ExecStartPost=/usr/bin/env bash ${SCRIPT_DEST} --verify
 RemainAfterExit=yes
 
 [Install]
@@ -235,35 +275,7 @@ if [ "$BOOT_MODE" = false ]; then
     if systemctl list-unit-files FreeDi.service >/dev/null 2>&1; then
         systemctl restart FreeDi 2>/dev/null || true
     fi
-
-    echo "Waiting 3 seconds for services and sub-processes (ustreamer) to initialize..."
-    sleep 3
-    /etc/init.d/tuning irq
-
-    echo ""
-    echo "=== VERIFICATION ==="
-    for proc in klippy.py moonraker nginx ustreamer FreeDiLCD/start.py; do
-        echo "--- $proc ---"
-        raw_pids=$(pgrep -f "$proc" || true)
-        pids=$(echo "$raw_pids" | tr '\n' ',' | sed 's/,$//')
-        if [ -n "$pids" ]; then
-            ps -T -o pid,tid,ni,comm -p "$pids"
-            for p in $raw_pids; do
-                taskset -cp "$p"
-            done
-        else
-            echo "Not running"
-        fi
-    done
-
-    echo ""
-    echo "--- IRQ AFFINITY ---"
-    grep -E 'ttyS|xhci|dwc2|ehci|ohci' /proc/interrupts | while read -r line; do
-        irq=$(echo "$line" | awk -F: '{print $1}' | tr -d ' ')
-        aff=$(cat /proc/irq/"$irq"/smp_affinity_list 2>/dev/null || echo "N/A")
-        dev=$(echo "$line" | awk '{print $NF}')
-        printf "IRQ %-3s (%-22s) -> CPU %s\n" "$irq" "$dev" "$aff"
-    done
+    run_verification 3
 else
     echo "Boot mode complete: configs backed up and host tuning applied before service startup."
 fi
