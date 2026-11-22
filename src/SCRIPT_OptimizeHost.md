@@ -332,7 +332,7 @@ exit 0
 Run this command over SSH on your Qidi Plus 4 to install `linux-cpupower`, configure `systemd` CPU core isolation, patch Nginx, and set serial/USB IRQ affinities automatically:
 
 ```bash
-curl -fsSL https://github.io | sudo bash
+curl -fsSL https://maleko48.github.io/m48_QP4/scripts/optimize_host.sh | sudo bash
 ```
 
 ## Full Script (`optimize_host.sh`)
