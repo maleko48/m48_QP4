@@ -98,10 +98,10 @@ set_irq_affinity() {
     TTYS1=$(grep ttyS1 /proc/interrupts | awk -F: '{print $1}' | tr -d '[:blank:]')
     TTYS2=$(grep ttyS2 /proc/interrupts | awk -F: '{print $1}' | tr -d '[:blank:]')
 
-    # MCU serial distribution
-    [ -n "$TTYS2" ] && echo 2 > /proc/irq/$TTYS2/smp_affinity   # CPU1 (heavy load)
-    [ -n "$TTYS0" ] && echo 4 > /proc/irq/$TTYS0/smp_affinity   # CPU2
-    [ -n "$TTYS1" ] && echo 4 > /proc/irq/$TTYS1/smp_affinity   # CPU2
+    # Serial distribution matched to service cores
+    [ -n "$TTYS0" ] && echo 2 > /proc/irq/$TTYS0/smp_affinity   # CPU1 (Mainboard MCU -> Klipper)
+    [ -n "$TTYS2" ] && echo 4 > /proc/irq/$TTYS2/smp_affinity   # CPU2 (Toolhead MCU -> Klipper)
+    [ -n "$TTYS1" ] && echo 1 > /proc/irq/$TTYS1/smp_affinity   # CPU0 (FreeDi LCD -> FreeDi.service)
 
     # USB controllers (Beacon probe + webcam)
     USB_IRQS=$(grep -E 'xhci|dwc2|ehci|ohci' /proc/interrupts | awk -F: '{print $1}' | tr -d '[:blank:]')
@@ -139,6 +139,9 @@ tune_down() {
 case "$1" in
     start|reload)
         tune_up
+        ;;
+    irq)
+        set_irq_affinity
         ;;
     stop)
         tune_down
@@ -214,6 +217,7 @@ After=local-fs.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/env bash ${SCRIPT_DEST} --boot
+ExecStartPost=/bin/sh -c 'sleep 6 && /etc/init.d/tuning irq &'
 RemainAfterExit=yes
 
 [Install]
@@ -234,6 +238,7 @@ if [ "$BOOT_MODE" = false ]; then
 
     echo "Waiting 3 seconds for services and sub-processes (ustreamer) to initialize..."
     sleep 3
+    /etc/init.d/tuning irq
 
     echo ""
     echo "=== VERIFICATION ==="
@@ -249,6 +254,15 @@ if [ "$BOOT_MODE" = false ]; then
         else
             echo "Not running"
         fi
+    done
+
+    echo ""
+    echo "--- IRQ AFFINITY ---"
+    grep -E 'ttyS|xhci|dwc2|ehci|ohci' /proc/interrupts | while read -r line; do
+        irq=$(echo "$line" | awk -F: '{print $1}' | tr -d ' ')
+        aff=$(cat /proc/irq/"$irq"/smp_affinity_list 2>/dev/null || echo "N/A")
+        dev=$(echo "$line" | awk '{print $NF}')
+        printf "IRQ %-3s (%-22s) -> CPU %s\n" "$irq" "$dev" "$aff"
     done
 else
     echo "Boot mode complete: configs backed up and host tuning applied before service startup."
