@@ -111,7 +111,7 @@ set_irq_affinity() {
 }
 
 tune_up() {
-    if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files | grep -q '^irqbalance'; then
+    if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files irqbalance.service >/dev/null 2>&1; then
         systemctl stop irqbalance 2>/dev/null || true
         systemctl disable irqbalance 2>/dev/null || true
     fi
@@ -125,7 +125,7 @@ tune_up() {
 }
 
 tune_down() {
-    if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files | grep -q '^irqbalance'; then
+    if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files irqbalance.service >/dev/null 2>&1; then
         systemctl enable irqbalance 2>/dev/null || true
         systemctl start irqbalance 2>/dev/null || true
     fi
@@ -155,7 +155,7 @@ chmod 755 /etc/init.d/tuning
 ln -sf /etc/init.d/tuning /etc/rc3.d/S99tuning
 
 echo "=== [4/8] Disabling conflicting tuning & applying systemd overrides ==="
-if systemctl list-unit-files | grep -q '^service_tuning.service'; then
+if systemctl list-unit-files service_tuning.service >/dev/null 2>&1; then
     systemctl stop service_tuning.service 2>/dev/null || true
     systemctl disable service_tuning.service 2>/dev/null || true
     systemctl mask service_tuning.service 2>/dev/null || true
@@ -167,7 +167,7 @@ apply_override() {
     local affinity="$2"
     local nice_val="$3"
 
-    if systemctl list-unit-files | grep -q "^${service}\.service"; then
+    if systemctl list-unit-files "${service}.service" >/dev/null 2>&1; then
         mkdir -p "/etc/systemd/system/${service}.service.d"
         cat << EOF > "/etc/systemd/system/${service}.service.d/override.conf"
 [Service]
@@ -228,7 +228,9 @@ echo "=== [8/8] Applying tuning & verifying ==="
 
 if [ "$BOOT_MODE" = false ]; then
     systemctl restart klipper moonraker nginx crowsnest 2>/dev/null || true
-    systemctl list-unit-files | grep -q '^FreeDi\.service' && systemctl restart FreeDi 2>/dev/null || true
+    if systemctl list-unit-files FreeDi.service >/dev/null 2>&1; then
+        systemctl restart FreeDi 2>/dev/null || true
+    fi
 
     echo "Waiting 3 seconds for services and sub-processes (ustreamer) to initialize..."
     sleep 3
