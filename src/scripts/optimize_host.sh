@@ -154,24 +154,37 @@ EOF
 chmod 755 /etc/init.d/tuning
 ln -sf /etc/init.d/tuning /etc/rc3.d/S99tuning
 
-echo "=== [4/8] Applying systemd CPUAffinity & Nice overrides ==="
+echo "=== [4/8] Disabling conflicting tuning & applying systemd overrides ==="
+if systemctl list-unit-files | grep -q '^service_tuning.service'; then
+    systemctl stop service_tuning.service 2>/dev/null || true
+    systemctl disable service_tuning.service 2>/dev/null || true
+    systemctl mask service_tuning.service 2>/dev/null || true
+    echo "  Stopped and masked conflicting service_tuning.service (Qidi-Tuning)"
+fi
+
 apply_override() {
     local service="$1"
     local affinity="$2"
     local nice_val="$3"
 
-    mkdir -p "/etc/systemd/system/${service}.service.d"
-    cat << EOF > "/etc/systemd/system/${service}.service.d/override.conf"
+    if systemctl list-unit-files | grep -q "^${service}\.service"; then
+        mkdir -p "/etc/systemd/system/${service}.service.d"
+        cat << EOF > "/etc/systemd/system/${service}.service.d/override.conf"
 [Service]
 CPUAffinity=${affinity}
 Nice=${nice_val}
 EOF
+        echo "  Configured ${service}.service (CPUAffinity=${affinity}, Nice=${nice_val})"
+    else
+        echo "  Skipped ${service}.service (not installed)"
+    fi
 }
 
 apply_override "klipper"   "1-2" "-5"
 apply_override "moonraker" "3"   "0"
 apply_override "nginx"     "3"   "1"
 apply_override "crowsnest" "3"   "2"
+apply_override "FreeDi"    "0"   "1"
 
 echo "=== [5/8] Patching /etc/nginx/nginx.conf ==="
 if [ -f /etc/nginx/nginx.conf ]; then
@@ -195,7 +208,7 @@ echo "=== [7/8] Installing systemd boot service (optimize-host.service) ==="
 cat << EOF > /etc/systemd/system/optimize-host.service
 [Unit]
 Description=Run optimize_host.sh on boot
-Before=klipper.service moonraker.service nginx.service crowsnest.service
+Before=klipper.service moonraker.service nginx.service crowsnest.service FreeDi.service
 After=local-fs.target
 
 [Service]
@@ -215,13 +228,14 @@ echo "=== [8/8] Applying tuning & verifying ==="
 
 if [ "$BOOT_MODE" = false ]; then
     systemctl restart klipper moonraker nginx crowsnest 2>/dev/null || true
+    systemctl list-unit-files | grep -q '^FreeDi\.service' && systemctl restart FreeDi 2>/dev/null || true
 
     echo "Waiting 3 seconds for services and sub-processes (ustreamer) to initialize..."
     sleep 3
 
     echo ""
     echo "=== VERIFICATION ==="
-    for proc in klippy.py moonraker nginx ustreamer; do
+    for proc in klippy.py moonraker nginx ustreamer FreeDiLCD/start.py; do
         echo "--- $proc ---"
         raw_pids=$(pgrep -f "$proc" || true)
         pids=$(echo "$raw_pids" | tr '\n' ',' | sed 's/,$//')
