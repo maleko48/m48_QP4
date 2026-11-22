@@ -215,6 +215,14 @@
 > ```
 > 
 > #### BUILD & FLASH KATAPULT
+> IMPORANT:
+> 
+> If this is NOT a first install / flash FROM STOCK, you likely already have the katapult bootloader intact.
+> 
+> If following other guides that specify copying `~/katapult/out/deployer.bin` to a microSD card and renaming the file to `qd_mcu.bin`, the Qidi Plus4 will NOT rename `qd_mcu.bin` to `qd_mcu.CUR` since the katapult bootloader is NOT the stock bootloader and will NOT be looking for said file on SD card.
+> 
+> Instead, you should only need to flash the `katapult.bin` file to the mainboard MCU after calling it into flashing mode by either tapping the `BOOT0` (center) button once or by using the pytool command specified below.
+> 
 > ```
 > cd ~
 > git clone https://github.com/Arksine/katapult
@@ -226,7 +234,7 @@
 > 
 > Press `q` then `y` to `quit and save`
 > 
-> Next, build the binaries
+> Next, build the `deployer.bin` and `katapult.bin` binaries
 > ```
 > make clean
 > make -j4
@@ -265,17 +273,21 @@
 > 
 > Once booted, `click center reset button on mainboard` to enter flashing mode again
 > 
-> **NOTE:**<br>the `red LED` and `white caselights` should be `blinking on and off` to let you know it is in `MCU flashing mode`
+> **NOTE:**<br>the `red LED` and `white caselights` should be `blinking on and off` to let you know it is in `MCU flashing mode` since we set the `Enable status LED` option to `(PC7)    Status LED GPIO Pin`
 > 
 > #### BUILD & FLASH KLIPPER
-> [![_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges.png](_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges.png)](_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges.png)
+> [![_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges_LABELED.png](_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges_LABELED.png)](_IMAGE__Klipper__STM32F401__32k-bl-offset_8MHz_USART1-PA10-PA9_500k-baud_step-both-edges_LABELED.png)
 > 
 > Press `q` then `y` to `quit and save`.
 > 
-> Next, build the binaries
+> Next, build the `klipper.bin` binary
 > ```
 > make clean
 > make -j4
+> ```
+> To pull the generated `klipper.bin` file back to your host machine from the 3D printer, you can use the folowing command from a WSL Debian session:
+> ```
+> mkdir -p /mnt/f/zFLASH/klipper-out/mainboard/ && scp mks@10.10.60.6:~/klipper/out/klipper.bin /mnt/f/zFLASH/klipper-out/mainboard/klipper.bin
 > ```
 > 
 > Then flash `klipper.bin` to `mainboard MCU`
@@ -283,6 +295,11 @@
 > sudo service klipper stop
 > cd ~/katapult/scripts
 > python3 flashtool.py -b 500000 -d /dev/ttyS0 -f ~/klipper/out/klipper.bin
+> ```
+> 
+> Or, more generically ( for most users ), you can use the following but don’t forget to change <USERNAME> and <IP_ADDRESS> to your own first:
+> ```
+> mkdir -p /mnt/c/zTEMP/klipper-out/mainboard/ && scp <USERNAME>@<IP_ADDRESS>:~/klipper/out/klipper.bin /mnt/c/zTEMP/klipper-out/mainboard/klipper.bin
 > ```
 > 
 > Next, power cycle printer using
