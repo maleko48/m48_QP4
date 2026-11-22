@@ -11,7 +11,7 @@ if [ "${1:-}" = "--boot" ]; then
     BOOT_MODE=true
 fi
 
-SCRIPT_URL="https://github.io"
+SCRIPT_URL="https://maleko48.github.io/m48_QP4/scripts/optimize_host.sh"
 TARGET_USER="${SUDO_USER:-mks}"
 TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 CONFIG_DIR="${TARGET_HOME}/printer_data/config"
