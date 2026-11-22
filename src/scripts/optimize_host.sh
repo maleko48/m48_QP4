@@ -10,7 +10,7 @@ SCRIPT_URL="https://github.io"
 TARGET_USER="${SUDO_USER:-mks}"
 TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 CONFIG_DIR="${TARGET_HOME}/printer_data/config"
-SCRIPT_DIR="${CONFIG_DIR}/scripts"
+SCRIPT_DIR="${CONFIG_DIR}/_SCRIPTS"
 SCRIPT_DEST="${SCRIPT_DIR}/optimize_host.sh"
 TIMESTAMP=$(date +"%Y-%m-%dT%H-%M-%S")
 BACKUP_DIR="${CONFIG_DIR}/_BACKUP/${TIMESTAMP}"
@@ -38,10 +38,10 @@ for cfg in "${CONFIG_FILES[@]}"; do
 done
 
 if [ -d "$SCRIPT_DIR" ]; then
-    cp -rp "$SCRIPT_DIR" "${BACKUP_DIR}/scripts"
-    echo "  Backed up scripts/ folder"
+    cp -rp "$SCRIPT_DIR" "${BACKUP_DIR}/_SCRIPTS"
+    echo "  Backed up _SCRIPTS/ folder"
 else
-    echo "  Skipped scripts/ folder (not found)"
+    echo "  Skipped _SCRIPTS/ folder (not found)"
 fi
 
 chown -R "${TARGET_USER}:${TARGET_USER}" "${CONFIG_DIR}/_BACKUP"
