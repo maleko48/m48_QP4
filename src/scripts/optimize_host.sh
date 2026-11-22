@@ -20,7 +20,7 @@ mkdir -p "$BACKUP_DIR"
 
 CONFIG_FILES=(
     "crowsnest.conf"
-    "freedi.conf"
+    "freedi.cfg"
     "macros.cfg"
     "mainsail.cfg"
     "moonraker.conf"
