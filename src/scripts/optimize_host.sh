@@ -25,24 +25,20 @@ BACKUP_DIR="${BACKUP_ROOT}/${TIMESTAMP}"
 echo "=== [1/8] Backing up printer configs and scripts to ${BACKUP_DIR} ==="
 mkdir -p "$BACKUP_DIR"
 
-CONFIG_FILES=(
-    "crowsnest.conf"
-    "freedi.cfg"
-    "macros.cfg"
-    "mainsail.cfg"
-    "moonraker.conf"
-    "printer.cfg"
-    "timelapse.cfg"
-)
+shopt -s nullglob
+CONFIG_FILES=("${CONFIG_DIR}"/*.cfg "${CONFIG_DIR}"/*.conf)
+shopt -u nullglob
 
-for cfg in "${CONFIG_FILES[@]}"; do
-    if [ -f "${CONFIG_DIR}/${cfg}" ]; then
-        cp -p "${CONFIG_DIR}/${cfg}" "${BACKUP_DIR}/"
-        echo "  Backed up ${cfg}"
-    else
-        echo "  Skipped ${cfg} (not found)"
-    fi
-done
+if [ "${#CONFIG_FILES[@]}" -gt 0 ]; then
+    for cfg in "${CONFIG_FILES[@]}"; do
+        if [ -f "$cfg" ]; then
+            cp -p "$cfg" "${BACKUP_DIR}/"
+            echo "  Backed up $(basename "$cfg")"
+        fi
+    done
+else
+    echo "  No .cfg or .conf files found in ${CONFIG_DIR}"
+fi
 
 if [ -d "$SCRIPT_DIR" ]; then
     cp -rp "$SCRIPT_DIR" "${BACKUP_DIR}/_SCRIPTS"
