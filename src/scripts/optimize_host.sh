@@ -11,14 +11,16 @@ if [ "${1:-}" = "--boot" ]; then
     BOOT_MODE=true
 fi
 
-SCRIPT_URL="https://maleko48.github.io/m48_QP4/scripts/optimize_host.sh"
+SCRIPT_URL="https://github.io"
 TARGET_USER="${SUDO_USER:-mks}"
 TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 CONFIG_DIR="${TARGET_HOME}/printer_data/config"
 SCRIPT_DIR="${CONFIG_DIR}/_SCRIPTS"
 SCRIPT_DEST="${SCRIPT_DIR}/optimize_host.sh"
+BACKUP_ROOT="${CONFIG_DIR}/_BACKUP"
+ARCHIVE_DIR="${BACKUP_ROOT}/_ARCHIVE"
 TIMESTAMP=$(date +"%Y-%m-%dT%H-%M-%S")
-BACKUP_DIR="${CONFIG_DIR}/_BACKUP/${TIMESTAMP}"
+BACKUP_DIR="${BACKUP_ROOT}/${TIMESTAMP}"
 
 echo "=== [1/8] Backing up printer configs and scripts to ${BACKUP_DIR} ==="
 mkdir -p "$BACKUP_DIR"
@@ -49,7 +51,22 @@ else
     echo "  Skipped _SCRIPTS/ folder (not found)"
 fi
 
-chown -R "${TARGET_USER}:${TARGET_USER}" "${CONFIG_DIR}/_BACKUP"
+# Keep the 10 most recent backups in _BACKUP and move older ones to _BACKUP/_ARCHIVE
+mapfile -t OLD_BACKUPS < <(
+    find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d ! -name "_ARCHIVE" -printf '%f\n' \
+    | sort -r \
+    | tail -n +11
+)
+
+if [ "${#OLD_BACKUPS[@]}" -gt 0 ]; then
+    mkdir -p "$ARCHIVE_DIR"
+    for old_dir in "${OLD_BACKUPS[@]}"; do
+        mv "${BACKUP_ROOT}/${old_dir}" "${ARCHIVE_DIR}/"
+        echo "  Archived older backup: ${old_dir}"
+    done
+fi
+
+chown -R "${TARGET_USER}:${TARGET_USER}" "$BACKUP_ROOT"
 
 echo "=== [2/8] Installing linux-cpupower ==="
 if ! command -v cpupower >/dev/null 2>&1; then
@@ -208,7 +225,7 @@ if [ "$BOOT_MODE" = false ]; then
 
     echo ""
     echo "=== VERIFICATION ==="
-    for proc in klippy moonraker nginx ustreamer; do
+    for proc in klippy.py moonraker nginx ustreamer; do
         echo "--- $proc ---"
         raw_pids=$(pgrep -f "$proc" || true)
         pids=$(echo "$raw_pids" | tr '\n' ',' | sed 's/,$//')
