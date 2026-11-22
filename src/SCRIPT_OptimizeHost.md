@@ -1,4 +1,4 @@
-# SCRIPT:&emsp;```HOST_OPTIMIZER.sh```
+# SCRIPT:&emsp;```optimize_host.sh```
 ## PATH:&emsp;```!/home/mks/printer_data/config```
 ## ORIGINAL SCRIPT:<br>[https://github.com/qidi-community/Plus4-Wiki/blob/main/content/system-tuning/README.md](https://github.com/qidi-community/Plus4-Wiki/blob/main/content/system-tuning/README.md)
 <br>
@@ -245,129 +245,20 @@ esac
 exit 0
 ```
 
-## MY CUSTOM, UPDATED SCRIPT (`/etc/init.d/tuning`):
-```sh
-#!/bin/sh
-
-### BEGIN INIT INFO
-# Provides:          tuning
-# Required-Start:    \$local_fs \(remote_fs\)network syslog named
-# Required-Stop:     \$local_fs \(remote_fs\)network syslog named
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: optimized host cpu & process tuning
-# Description:       tunes CPU performance and hardware IRQ affinity
-### END INIT INFO
-
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-CPUPOWER=/usr/bin/cpupower
-CPUPOWERFREQSET="/usr/bin/cpupower frequency-set"
-CPUPOWERFREQINFO="/usr/bin/cpupower frequency-info"
-
-test -x \$CPUPOWER || exit 0
-
-set_irq_affinity() {
-    TTYS0=\$(grep ttyS0 /proc/interrupts | awk -F: '{print \$1}' | tr -d '[:blank:]')
-    TTYS1=\$(grep ttyS1 /proc/interrupts | awk -F: '{print \$1}' | tr -d '[:blank:]')
-    TTYS2=\$(grep ttyS2 /proc/interrupts | awk -F: '{print \$1}' | tr -d '[:blank:]')
-
-    # MCU distribution
-    [ -n "\(TTYS2" ] && echo 2 > /proc/irq/\)TTYS2/smp_affinity   # CPU1 (heavy load)
-    [ -n "\(TTYS0" ] && echo 4 > /proc/irq/\)TTYS0/smp_affinity   # CPU2
-    [ -n "\(TTYS1" ] && echo 4 > /proc/irq/\)TTYS1/smp_affinity   # CPU2
-
-    # USB controllers (match ALL real ones)
-    USB_IRQS=\$(grep -E 'xhci|dwc2|ehci|ohci' /proc/interrupts | awk -F: '{print \$1}' | tr -d '[:blank:]')
-    for irq in \$USB_IRQS; do
-        echo 8 > /proc/irq/\$irq/smp_affinity   # CPU3
-    done
-}
-
-tune_up() {
-    # Disable irqbalance so it doesn't override manual IRQ affinity
-    if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files | grep -q '^irqbalance'; then
-        echo "Disabling irqbalance service"
-        systemctl stop irqbalance
-        systemctl disable irqbalance
-    fi
-
-    # Put CPU into Performance Mode
-    echo "Placing Printer CPU into Performance mode with fixed frequency"
-    \$CPUPOWERFREQSET -g performance
-    \(CPUPOWERFREQSET -d 1300MHz\)CPUPOWERFREQINFO
-
-    set_irq_affinity
-}
-
-tune_down() {
-    # Re-enable irqbalance
-    if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files | grep -q '^irqbalance'; then
-        echo "Re-enabling irqbalance service"
-        systemctl enable irqbalance 2>/dev/null
-        systemctl start irqbalance 2>/dev/null
-    fi
-
-    # Put CPU into ondemand Mode
-    echo "Placing Printer CPU into default ondemand and frequency scaling mode"
-    \$CPUPOWERFREQSET -g ondemand
-    \(CPUPOWERFREQSET -d 408MHz\)CPUPOWERFREQINFO
-}
-
-case "\$1" in
-    start|reload)
-        tune_up
-        ;;
-    stop)
-        tune_down
-        ;;
-    *)
-        exit 0
-        ;;
-esac
-
-exit 0
-```
-
-## INSTALLATION INSTRUCTIONS:
-Run this command over SSH on your Qidi Plus 4 to install `linux-cpupower`, configure `systemd` CPU core isolation, patch Nginx, and set serial/USB IRQ affinities automatically:
-
-```bash
-curl -fsSL https://maleko48.github.io/m48_QP4/scripts/optimize_host.sh | sudo bash
-```
-
-## Full Script (`optimize_host.sh`)
+## MY CUSTOM, UPDATED SCRIPT (`optimize_host.sh`):
 
 ```bash
 {{#include scripts/optimize_host.sh}}
 ```
 
+## INSTALL USING:
+```bash
+curl -fsSL https://maleko48.github.io/m48_QP4/scripts/optimize_host.sh | sudo bash
+```
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## WHAT IT DOES:
 1. **Install `cpupower`:**
    ```bash
    sudo apt update

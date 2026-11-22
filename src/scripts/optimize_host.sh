@@ -6,7 +6,13 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-echo "=== [1/5] Installing linux-cpupower ==="
+SCRIPT_URL="https://github.io"
+TARGET_USER="${SUDO_USER:-mks}"
+TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
+SCRIPT_DIR="${TARGET_HOME}/printer_data/config/scripts"
+SCRIPT_DEST="${SCRIPT_DIR}/optimize_host.sh"
+
+echo "=== [1/6] Installing linux-cpupower ==="
 if ! command -v cpupower >/dev/null 2>&1; then
     apt-get update -qq
     apt-get install -y -qq linux-cpupower
@@ -14,7 +20,7 @@ else
     echo "cpupower is already installed."
 fi
 
-echo "=== [2/5] Creating /etc/init.d/tuning ==="
+echo "=== [2/6] Creating /etc/init.d/tuning ==="
 cat << 'EOF' > /etc/init.d/tuning
 #!/bin/sh
 
@@ -96,7 +102,7 @@ EOF
 chmod 755 /etc/init.d/tuning
 ln -sf /etc/init.d/tuning /etc/rc3.d/S99tuning
 
-echo "=== [3/5] Applying systemd CPUAffinity & Nice overrides ==="
+echo "=== [3/6] Applying systemd CPUAffinity & Nice overrides ==="
 apply_override() {
     local service="$1"
     local affinity="$2"
@@ -115,7 +121,7 @@ apply_override "moonraker" "3"   "0"
 apply_override "nginx"     "3"   "1"
 apply_override "crowsnest" "3"   "2"
 
-echo "=== [4/5] Patching /etc/nginx/nginx.conf ==="
+echo "=== [4/6] Patching /etc/nginx/nginx.conf ==="
 if [ -f /etc/nginx/nginx.conf ]; then
     cp -n /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
     sed -i 's/^\s*worker_processes\s\+.*;/worker_processes 1;/' /etc/nginx/nginx.conf
@@ -123,7 +129,17 @@ if [ -f /etc/nginx/nginx.conf ]; then
     nginx -t
 fi
 
-echo "=== [5/5] Reloading systemd, applying tuning & verifying ==="
+echo "=== [5/6] Saving local copy to ${SCRIPT_DEST} ==="
+mkdir -p "$SCRIPT_DIR"
+if [ -f "${0:-}" ] && [ "$(realpath "$0" 2>/dev/null || true)" != "$(realpath "$SCRIPT_DEST" 2>/dev/null || true)" ]; then
+    cp -f "$0" "$SCRIPT_DEST"
+else
+    curl -fsSL "$SCRIPT_URL" -o "$SCRIPT_DEST" || echo "Warning: Could not download local copy from $SCRIPT_URL"
+fi
+chmod +x "$SCRIPT_DEST"
+chown -R "${TARGET_USER}:${TARGET_USER}" "$SCRIPT_DIR"
+
+echo "=== [6/6] Reloading systemd, applying tuning & verifying ==="
 systemctl daemon-reload
 /etc/init.d/tuning reload
 systemctl restart klipper moonraker nginx crowsnest 2>/dev/null || true
