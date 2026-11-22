@@ -6,6 +6,11 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+BOOT_MODE=false
+if [ "${1:-}" = "--boot" ]; then
+    BOOT_MODE=true
+fi
+
 SCRIPT_URL="https://github.io"
 TARGET_USER="${SUDO_USER:-mks}"
 TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
@@ -15,7 +20,7 @@ SCRIPT_DEST="${SCRIPT_DIR}/optimize_host.sh"
 TIMESTAMP=$(date +"%Y-%m-%dT%H-%M-%S")
 BACKUP_DIR="${CONFIG_DIR}/_BACKUP/${TIMESTAMP}"
 
-echo "=== [1/7] Backing up printer configs and scripts to ${BACKUP_DIR} ==="
+echo "=== [1/8] Backing up printer configs and scripts to ${BACKUP_DIR} ==="
 mkdir -p "$BACKUP_DIR"
 
 CONFIG_FILES=(
@@ -46,7 +51,7 @@ fi
 
 chown -R "${TARGET_USER}:${TARGET_USER}" "${CONFIG_DIR}/_BACKUP"
 
-echo "=== [2/7] Installing linux-cpupower ==="
+echo "=== [2/8] Installing linux-cpupower ==="
 if ! command -v cpupower >/dev/null 2>&1; then
     apt-get update -qq
     apt-get install -y -qq linux-cpupower
@@ -54,7 +59,7 @@ else
     echo "cpupower is already installed."
 fi
 
-echo "=== [3/7] Creating /etc/init.d/tuning ==="
+echo "=== [3/8] Creating /etc/init.d/tuning ==="
 cat << 'EOF' > /etc/init.d/tuning
 #!/bin/sh
 
@@ -136,7 +141,7 @@ EOF
 chmod 755 /etc/init.d/tuning
 ln -sf /etc/init.d/tuning /etc/rc3.d/S99tuning
 
-echo "=== [4/7] Applying systemd CPUAffinity & Nice overrides ==="
+echo "=== [4/8] Applying systemd CPUAffinity & Nice overrides ==="
 apply_override() {
     local service="$1"
     local affinity="$2"
@@ -155,7 +160,7 @@ apply_override "moonraker" "3"   "0"
 apply_override "nginx"     "3"   "1"
 apply_override "crowsnest" "3"   "2"
 
-echo "=== [5/7] Patching /etc/nginx/nginx.conf ==="
+echo "=== [5/8] Patching /etc/nginx/nginx.conf ==="
 if [ -f /etc/nginx/nginx.conf ]; then
     cp -n /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
     sed -i 's/^\s*worker_processes\s\+.*;/worker_processes 1;/' /etc/nginx/nginx.conf
@@ -163,30 +168,53 @@ if [ -f /etc/nginx/nginx.conf ]; then
     nginx -t
 fi
 
-echo "=== [6/7] Saving local copy to ${SCRIPT_DEST} ==="
+echo "=== [6/8] Saving local copy to ${SCRIPT_DEST} ==="
 mkdir -p "$SCRIPT_DIR"
 if [ -f "${0:-}" ] && [ "$(realpath "$0" 2>/dev/null || true)" != "$(realpath "$SCRIPT_DEST" 2>/dev/null || true)" ]; then
     cp -f "$0" "$SCRIPT_DEST"
-else
+elif [ "$BOOT_MODE" = false ]; then
     curl -fsSL "$SCRIPT_URL" -o "$SCRIPT_DEST" || echo "Warning: Could not download local copy from $SCRIPT_URL"
 fi
 chmod +x "$SCRIPT_DEST"
 chown -R "${TARGET_USER}:${TARGET_USER}" "$SCRIPT_DIR"
 
-echo "=== [7/7] Reloading systemd, applying tuning & verifying ==="
-systemctl daemon-reload
-/etc/init.d/tuning reload
-systemctl restart klipper moonraker nginx crowsnest 2>/dev/null || true
+echo "=== [7/8] Installing systemd boot service (optimize-host.service) ==="
+cat << EOF > /etc/systemd/system/optimize-host.service
+[Unit]
+Description=Run optimize_host.sh on boot
+Before=klipper.service moonraker.service nginx.service crowsnest.service
+After=local-fs.target
 
-echo ""
-echo "=== VERIFICATION ==="
-for proc in klippy moonraker nginx ustreamer; do
-    echo "--- $proc ---"
-    pids=$(pgrep -f "$proc" | tr '\n' ',' | sed 's/,$//')
-    if [ -n "$pids" ]; then
-        ps -T -o pid,tid,ni,comm -p "$pids"
-        for p in $(pgrep -f "$proc"); do taskset -cp "$p"; done
-    else
-        echo "Not running"
-    fi
-done
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/env bash ${SCRIPT_DEST} --boot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable optimize-host.service
+
+echo "=== [8/8] Applying tuning & verifying ==="
+/etc/init.d/tuning reload
+
+if [ "$BOOT_MODE" = false ]; then
+    systemctl restart klipper moonraker nginx crowsnest 2>/dev/null || true
+
+    echo ""
+    echo "=== VERIFICATION ==="
+    for proc in klippy moonraker nginx ustreamer; do
+        echo "--- $proc ---"
+        pids=$(pgrep -f "$proc" | tr '\n' ',' | sed 's/,$//')
+        if [ -n "$pids" ]; then
+            ps -T -o pid,tid,ni,comm -p "$pids"
+            for p in $(pgrep -f "$proc"); do taskset -cp "$p"; done
+        else
+            echo "Not running"
+        fi
+    done
+else
+    echo "Boot mode complete: configs backed up and host tuning applied before service startup."
+fi
