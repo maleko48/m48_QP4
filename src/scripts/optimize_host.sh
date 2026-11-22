@@ -21,9 +21,10 @@ run_verification() {
         raw_pids=$(pgrep -f "$proc" || true)
         pids=$(echo "$raw_pids" | tr '\n' ',' | sed 's/,$//')
         if [ -n "$pids" ]; then
-            ps -T -o pid,tid,ni,comm -p "$pids"
-            for p in $raw_pids; do
-                taskset -cp "$p"
+            printf "%7s %7s  %-8s %3s %3s  %s\n" "PID" "TID" "AFFINITY" "NI" "CPU" "COMMAND"
+            ps --no-headers -T -o pid=,tid=,ni=,psr=,comm= -p "$pids" | while read -r pid tid ni psr comm; do
+                aff=$(taskset -cp "$tid" 2>/dev/null | awk -F': ' '{print $2}')
+                printf "%7s %7s  %-8s %3s %3s  %s\n" "$pid" "$tid" "${aff:-N/A}" "$ni" "$psr" "$comm"
             done
         else
             echo "Not running"
