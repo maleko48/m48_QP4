@@ -11,7 +11,7 @@ if [ "${1:-}" = "--boot" ]; then
     BOOT_MODE=true
 fi
 
-SCRIPT_URL="https://github.io"
+SCRIPT_URL="https://maleko48.github.io/m48_QP4/scripts/optimize_host.sh"
 TARGET_USER="${SUDO_USER:-mks}"
 TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 CONFIG_DIR="${TARGET_HOME}/printer_data/config"
@@ -203,14 +203,20 @@ echo "=== [8/8] Applying tuning & verifying ==="
 if [ "$BOOT_MODE" = false ]; then
     systemctl restart klipper moonraker nginx crowsnest 2>/dev/null || true
 
+    echo "Waiting 3 seconds for services and sub-processes (ustreamer) to initialize..."
+    sleep 3
+
     echo ""
     echo "=== VERIFICATION ==="
     for proc in klippy moonraker nginx ustreamer; do
         echo "--- $proc ---"
-        pids=$(pgrep -f "$proc" | tr '\n' ',' | sed 's/,$//')
+        raw_pids=$(pgrep -f "$proc" || true)
+        pids=$(echo "$raw_pids" | tr '\n' ',' | sed 's/,$//')
         if [ -n "$pids" ]; then
             ps -T -o pid,tid,ni,comm -p "$pids"
-            for p in $(pgrep -f "$proc"); do taskset -cp "$p"; done
+            for p in $raw_pids; do
+                taskset -cp "$p"
+            done
         else
             echo "Not running"
         fi
