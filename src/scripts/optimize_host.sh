@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Last Updated: 2026-11-22T19:45:17-05:00
-SCRIPT_UPDATED="2026-11-22T19:45:17-05:00"
+# Last Updated: 2026-11-22T20:05:32-05:00
+SCRIPT_UPDATED="2026-11-22T20:05:32-05:00"
 set -euo pipefail
 
 if [ "$EUID" -ne 0 ]; then
@@ -20,7 +20,7 @@ run_verification() {
 
     echo ""
     echo "=== VERIFICATION ==="
-    for proc in klippy.py moonraker nginx ustreamer FreeDiLCD/start.py; do
+    for proc in FreeDiLCD/start.py klippy.py moonraker nginx ustreamer; do
         echo "--- $proc ---"
         raw_pids=$(pgrep -f "$proc" || true)
         pids=$(echo "$raw_pids" | tr '\n' ',' | sed 's/,$//')
@@ -42,7 +42,7 @@ run_verification() {
         aff=$(cat /proc/irq/"$irq"/smp_affinity_list 2>/dev/null || echo "N/A")
         dev=$(echo "$line" | awk '{print $NF}')
         printf "IRQ %-3s (%-22s) -> CPU %s\n" "$irq" "$dev" "$aff"
-    done
+    done | sort -k5 -n
 }
 
 # Post-boot verification hook called by optimize-host-verify.service
