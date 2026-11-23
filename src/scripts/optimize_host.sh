@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
+# Last Updated: 2026-11-22T19:02:57-05:00
+SCRIPT_UPDATED="2026-11-22T19:02:57-05:00"
 set -euo pipefail
 
 if [ "$EUID" -ne 0 ]; then
     echo "Error: Please run with sudo (e.g., sudo bash $0)"
     exit 1
 fi
+
+echo "Running optimize_host.sh (Build: ${SCRIPT_UPDATED})"
 
 MODE="${1:-interactive}"
 
@@ -52,7 +56,7 @@ if [ "$MODE" = "--boot" ]; then
     BOOT_MODE=true
 fi
 
-SCRIPT_URL="https://maleko48.github.io/m48_QP4/scripts/optimize_host.sh"
+SCRIPT_URL="https://github.io"
 TARGET_USER="${SUDO_USER:-mks}"
 TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 CONFIG_DIR="${TARGET_HOME}/printer_data/config"
