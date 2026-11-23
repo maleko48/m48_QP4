@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Last Updated: 2026-11-22T20:05:32-05:00
-SCRIPT_UPDATED="2026-11-22T20:05:32-05:00"
+# Last Updated: 2026-11-22T20:08:59-05:00
+SCRIPT_UPDATED="2026-11-22T20:08:59-05:00"
 set -euo pipefail
 
 if [ "$EUID" -ne 0 ]; then
@@ -42,7 +42,7 @@ run_verification() {
         aff=$(cat /proc/irq/"$irq"/smp_affinity_list 2>/dev/null || echo "N/A")
         dev=$(echo "$line" | awk '{print $NF}')
         printf "IRQ %-3s (%-22s) -> CPU %s\n" "$irq" "$dev" "$aff"
-    done | sort -k5 -n
+    done | sort -k6 -n -k2 -n
 }
 
 # Post-boot verification hook called by optimize-host-verify.service
