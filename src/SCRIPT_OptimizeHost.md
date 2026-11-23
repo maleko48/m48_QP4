@@ -245,15 +245,15 @@ esac
 exit 0
 ```
 
-## MY CUSTOM, UPDATED SCRIPT (`optimize_host.sh`):
+## MY CUSTOM, UPDATED SCRIPT (`optimize-host.sh`):
 
 ```bash
-{{#include scripts/optimize_host.sh}}
+{{#include scripts/optimize-host.sh}}
 ```
 
 ## INSTALL USING:
 ```bash
-curl -fsSL https://maleko48.github.io/m48_QP4/scripts/optimize_host.sh | sudo bash
+curl -fsSL https://maleko48.github.io/m48_QP4/scripts/optimize-host.sh | sudo bash
 ```
 
 
