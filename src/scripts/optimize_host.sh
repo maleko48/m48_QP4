@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Last Updated: 2026-11-22T19:18:33-05:00
-SCRIPT_UPDATED="2026-11-22T19:18:33-05:00"
+# Last Updated: 2026-11-22T19:45:17-05:00
+SCRIPT_UPDATED="2026-11-22T19:45:17-05:00"
 set -euo pipefail
 
 if [ "$EUID" -ne 0 ]; then
@@ -45,9 +45,9 @@ run_verification() {
     done
 }
 
-# Post-boot verification hook called by optimize-host.service ExecStartPost
+# Post-boot verification hook called by optimize-host-verify.service
 if [ "$MODE" = "--verify" ]; then
-    run_verification 6
+    run_verification 8
     exit 0
 fi
 
@@ -55,10 +55,12 @@ fi
 if [ "$MODE" = "--uninstall" ]; then
     echo "=== Reverting optimize_host.sh changes ==="
 
-    systemctl stop optimize-host.service 2>/dev/null || true
-    systemctl disable optimize-host.service 2>/dev/null || true
-    rm -f /etc/systemd/system/optimize-host.service
-    echo "  Removed optimize-host.service"
+    for unit in optimize-host.service optimize-host-verify.service; do
+        systemctl stop "$unit" 2>/dev/null || true
+        systemctl disable "$unit" 2>/dev/null || true
+        rm -f "/etc/systemd/system/${unit}"
+    done
+    echo "  Removed optimize-host.service and optimize-host-verify.service"
 
     for svc in klipper moonraker nginx crowsnest FreeDi; do
         rm -f "/etc/systemd/system/${svc}.service.d/override.conf"
@@ -296,7 +298,7 @@ fi
 chmod +x "$SCRIPT_DEST"
 chown -R "${TARGET_USER}:${TARGET_USER}" "$SCRIPT_DIR"
 
-echo "=== [7/8] Installing systemd boot service (optimize-host.service) ==="
+echo "=== [7/8] Installing systemd boot services ==="
 cat << EOF > /etc/systemd/system/optimize-host.service
 [Unit]
 Description=Run optimize_host.sh on boot
@@ -306,7 +308,20 @@ After=local-fs.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/env bash ${SCRIPT_DEST} --boot
-ExecStartPost=/usr/bin/env bash ${SCRIPT_DEST} --verify
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat << EOF > /etc/systemd/system/optimize-host-verify.service
+[Unit]
+Description=Verify host tuning and set post-init serial IRQs after service startup
+After=optimize-host.service klipper.service moonraker.service nginx.service crowsnest.service FreeDi.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/env bash ${SCRIPT_DEST} --verify
 RemainAfterExit=yes
 
 [Install]
@@ -314,7 +329,7 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable optimize-host.service
+systemctl enable optimize-host.service optimize-host-verify.service
 
 echo "=== [8/8] Applying tuning & verifying ==="
 /etc/init.d/tuning reload
