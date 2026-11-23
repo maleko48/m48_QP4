@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Last Updated: 2026-11-22T20:22:00-05:00
-SCRIPT_UPDATED="2026-11-22T20:22:00-05:00"
+# Last Updated: 2026-11-22T20:25:57-05:00
+SCRIPT_UPDATED="2026-11-22T20:25:57-05:00"
 set -euo pipefail
 
 if [ "$EUID" -ne 0 ]; then
@@ -9,7 +9,6 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 MODE="${1:-interactive}"
-
 TARGET_USER="${SUDO_USER:-mks}"
 TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 LOG_DIR="${TARGET_HOME}/printer_data/logs"
@@ -23,12 +22,12 @@ if [ "$MODE" = "--verify" ]; then
     exec > >(tee -a "$LOG_FILE") 2>&1
     echo ""
     echo "============================================================"
-    echo "Verification Run: $(date '+%Y-%m-%d %H:%M:%S %Z') (Mode: ${MODE})"
+    echo "Run Timestamp: $(date '+%Y-%m-%d %H:%M:%S %Z') | Mode: ${MODE}"
     echo "============================================================"
 else
     exec > >(tee "$LOG_FILE") 2>&1
     echo "============================================================"
-    echo "Run Started: $(date '+%Y-%m-%d %H:%M:%S %Z') (Mode: ${MODE})"
+    echo "Run Timestamp: $(date '+%Y-%m-%d %H:%M:%S %Z') | Mode: ${MODE}"
     echo "============================================================"
 fi
 
@@ -160,11 +159,11 @@ else
     echo "  Skipped _SCRIPTS/ folder (not found)"
 fi
 
-# Keep the 10 most recent backups in _BACKUP and move older ones to _BACKUP/_ARCHIVE
+# Keep the 5 most recent backups in _BACKUP and move older ones to _BACKUP/_ARCHIVE
 mapfile -t OLD_BACKUPS < <(
     find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d ! -name "_ARCHIVE" -printf '%f\n' \
     | sort -r \
-    | tail -n +11
+    | tail -n +6
 )
 
 if [ "${#OLD_BACKUPS[@]}" -gt 0 ]; then
