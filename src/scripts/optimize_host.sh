@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Last Updated: 2026-11-22T19:04:53-05:00
-SCRIPT_UPDATED="2026-11-22T19:04:53-05:00"
+# Last Updated: 2026-11-22T19:18:33-05:00
+SCRIPT_UPDATED="2026-11-22T19:18:33-05:00"
 set -euo pipefail
 
 if [ "$EUID" -ne 0 ]; then
@@ -48,6 +48,50 @@ run_verification() {
 # Post-boot verification hook called by optimize-host.service ExecStartPost
 if [ "$MODE" = "--verify" ]; then
     run_verification 6
+    exit 0
+fi
+
+# Uninstall hook to revert host tuning and restore stock defaults
+if [ "$MODE" = "--uninstall" ]; then
+    echo "=== Reverting optimize_host.sh changes ==="
+
+    systemctl stop optimize-host.service 2>/dev/null || true
+    systemctl disable optimize-host.service 2>/dev/null || true
+    rm -f /etc/systemd/system/optimize-host.service
+    echo "  Removed optimize-host.service"
+
+    for svc in klipper moonraker nginx crowsnest FreeDi; do
+        rm -f "/etc/systemd/system/${svc}.service.d/override.conf"
+        rmdir "/etc/systemd/system/${svc}.service.d" 2>/dev/null || true
+    done
+    echo "  Removed systemd service overrides"
+
+    if [ -x /etc/init.d/tuning ]; then
+        /etc/init.d/tuning stop
+    fi
+    rm -f /etc/rc3.d/S99tuning /etc/init.d/tuning
+    echo "  Removed /etc/init.d/tuning and reset CPU governor"
+
+    if [ -f /etc/nginx/nginx.conf.bak ]; then
+        mv /etc/nginx/nginx.conf.bak /etc/nginx/nginx.conf
+        nginx -t
+        echo "  Restored original /etc/nginx/nginx.conf"
+    fi
+
+    if systemctl list-unit-files service_tuning.service >/dev/null 2>&1; then
+        systemctl unmask service_tuning.service 2>/dev/null || true
+        systemctl enable service_tuning.service 2>/dev/null || true
+        systemctl start service_tuning.service 2>/dev/null || true
+        echo "  Re-enabled stock service_tuning.service"
+    fi
+
+    systemctl daemon-reload
+    systemctl restart klipper moonraker nginx crowsnest 2>/dev/null || true
+    if systemctl list-unit-files FreeDi.service >/dev/null 2>&1; then
+        systemctl restart FreeDi 2>/dev/null || true
+    fi
+
+    echo "Uninstall complete. Please reboot the printer to reset hardware IRQ affinities to kernel defaults."
     exit 0
 fi
 
@@ -274,7 +318,6 @@ systemctl enable optimize-host.service
 
 echo "=== [8/8] Applying tuning & verifying ==="
 /etc/init.d/tuning reload
-
 if [ "$BOOT_MODE" = false ]; then
     systemctl restart klipper moonraker nginx crowsnest 2>/dev/null || true
     if systemctl list-unit-files FreeDi.service >/dev/null 2>&1; then
