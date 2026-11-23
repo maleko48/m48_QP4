@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Last Updated: 2026-11-22T19:02:57-05:00
-SCRIPT_UPDATED="2026-11-22T19:02:57-05:00"
+# Last Updated: 2026-11-22T19:04:53-05:00
+SCRIPT_UPDATED="2026-11-22T19:04:53-05:00"
 set -euo pipefail
 
 if [ "$EUID" -ne 0 ]; then
@@ -56,7 +56,7 @@ if [ "$MODE" = "--boot" ]; then
     BOOT_MODE=true
 fi
 
-SCRIPT_URL="https://github.io"
+SCRIPT_URL="https://maleko48.github.io/m48_QP4/scripts/optimize_host.sh"
 TARGET_USER="${SUDO_USER:-mks}"
 TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 CONFIG_DIR="${TARGET_HOME}/printer_data/config"
