@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Last Updated: 2026-11-22T20:12:22-05:00
-SCRIPT_UPDATED="2026-11-22T20:12:22-05:00"
+# Last Updated: 2026-11-22T20:22:00-05:00
+SCRIPT_UPDATED="2026-11-22T20:22:00-05:00"
 set -euo pipefail
 
 if [ "$EUID" -ne 0 ]; then
@@ -8,9 +8,31 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-echo "Running optimize_host.sh (Build: ${SCRIPT_UPDATED})"
-
 MODE="${1:-interactive}"
+
+TARGET_USER="${SUDO_USER:-mks}"
+TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
+LOG_DIR="${TARGET_HOME}/printer_data/logs"
+LOG_FILE="${LOG_DIR}/optimize-host.log"
+
+mkdir -p "$LOG_DIR"
+touch "$LOG_FILE"
+chown -R "${TARGET_USER}:${TARGET_USER}" "$LOG_DIR"
+
+if [ "$MODE" = "--verify" ]; then
+    exec > >(tee -a "$LOG_FILE") 2>&1
+    echo ""
+    echo "============================================================"
+    echo "Verification Run: $(date '+%Y-%m-%d %H:%M:%S %Z') (Mode: ${MODE})"
+    echo "============================================================"
+else
+    exec > >(tee "$LOG_FILE") 2>&1
+    echo "============================================================"
+    echo "Run Started: $(date '+%Y-%m-%d %H:%M:%S %Z') (Mode: ${MODE})"
+    echo "============================================================"
+fi
+
+echo "Running optimize_host.sh (Build: ${SCRIPT_UPDATED})"
 
 run_verification() {
     local wait_secs="$1"
@@ -105,8 +127,6 @@ if [ "$MODE" = "--boot" ]; then
 fi
 
 SCRIPT_URL="https://maleko48.github.io/m48_QP4/scripts/optimize_host.sh"
-TARGET_USER="${SUDO_USER:-mks}"
-TARGET_HOME=$(getent passwd "$TARGET_USER" | cut -d: -f6)
 CONFIG_DIR="${TARGET_HOME}/printer_data/config"
 SCRIPT_DIR="${CONFIG_DIR}/_SCRIPTS"
 SCRIPT_DEST="${SCRIPT_DIR}/optimize_host.sh"
